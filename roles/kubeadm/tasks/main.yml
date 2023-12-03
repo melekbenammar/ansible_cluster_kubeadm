@@ -1,0 +1,47 @@
+---
+# tasks file for kubeadm
+#tasks:
+  - name: Update package lists
+    apt:
+      update_cache: yes
+
+  
+  - name: Install multiple packages
+    apt:
+      name:
+        - apt-transport-https
+        - ca-certificates 
+        - gpg
+        - software-properties-common
+      state: present
+
+  - name: Delete the file
+    file:
+        path: /etc/apt/trusted.gpg.d/cgoogle.gpg
+        state: absent
+
+  - name: Download Google Cloud apt-key
+    shell: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmour -o /etc/apt/trusted.gpg.d/cgoogle.gpg
+
+  - name: Add Kubernetes apt repository
+    apt_repository:
+        repo: "deb http://apt.kubernetes.io/ kubernetes-xenial main"
+        state: present
+        filename: "kubernetes"
+        
+  - name: Update package cache
+    apt:
+        update_cache: yes
+
+  - name: Install kubeadm, kubelet, and kubectl
+    apt:
+        name:
+          - kubeadm=1.28.2-00
+          - kubelet=1.28.2-00
+          - kubectl=1.28.2-00
+        state: present
+
+  - name: Download Google Cloud apt-key
+    shell: apt-mark hold kubelet kubeadm kubectl
+
+

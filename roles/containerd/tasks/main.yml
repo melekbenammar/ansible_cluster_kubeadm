@@ -1,0 +1,65 @@
+---
+# tasks file for containerd
+- name: Add modules to /etc/modules-load.d/containerd.conf
+  command: echo -e "overlay\nbr_netfilter" >>/etc/modules-load.d/containerd.conf
+
+- name: Load overlay module
+  modprobe:
+     name: overlay
+
+- name: Load br_netfilter module
+  modprobe:
+    name: br_netfilter
+
+- name: Set net.bridge.bridge-nf-call-iptables sysctl parameter
+  sysctl:
+        name: net.bridge.bridge-nf-call-iptables
+        value: 1
+        state: present
+
+- name: Set net.ipv4.ip_forward sysctl parameter
+  sysctl:
+        name: net.ipv4.ip_forward
+        value: 1
+        state: present
+
+- name: Set net.bridge.bridge-nf-call-ip6tables sysctl parameter
+  sysctl:
+        name: net.bridge.bridge-nf-call-ip6tables
+        value: 1
+        state: present
+
+- name: enable system parameter
+  shell: sysctl --system
+
+- name: Update APT package list
+  apt:
+        update_cache: yes
+
+- name: Install containerd package
+  apt:
+      name: containerd
+      state: present
+
+- name: Apply containerd configuration
+  command: containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
+
+
+- name: Update SystemdCgroup setting in containerd config
+  lineinfile:
+        path: /etc/containerd/config.toml
+        regexp: '^SystemdCgroup\s*='
+        line: 'SystemdCgroup = true'
+        state: present
+
+- name: Restart containerd service
+  systemd:
+        name: containerd
+        state: restarted
+
+- name: Enable containerd service on boot
+  systemd:
+        name: containerd
+        enabled: yes
+
+        https://www.linuxtechi.com/install-kubernetes-cluster-on-debian/

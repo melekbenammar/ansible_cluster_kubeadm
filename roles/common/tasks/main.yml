@@ -1,0 +1,19 @@
+---
+# tasks file for common
+#tasks:
+  - name: Update package lists
+    apt:
+      update_cache: yes
+
+
+  - name: Install multiple packages
+    apt:
+      name:
+        - vim
+        - htop
+        - curl
+        - wget
+        - net-tools
+        - git
+        - gnupg  
+      state: present
